@@ -30,7 +30,7 @@ app.controller('mainController', function($scope) {
 
   $scope.vmds = [
     {
-      'name': 'nekomimi',
+      'name': 'nekomimi switch',
       'path': 'mmd/motions/nekomimi_switch/nekomimi_mikuv2.vmd',
       'selected': true,
       'sourceUrl': 'http://www.nicovideo.jp/watch/sm14365789',
