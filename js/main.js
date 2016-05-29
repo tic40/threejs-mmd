@@ -103,7 +103,9 @@ app.controller('mainController', function($scope) {
     var onProgress = function onProgress(xhr) {
       if (xhr.lengthComputable) {
         var percentComplete = xhr.loaded / xhr.total * 100;
+        $scope.loadingMsg = Math.round(percentComplete, 2) + '% downloaded';
         console.log(Math.round(percentComplete, 2) + '% downloaded');
+        $scope.$apply();
       }
     };
 

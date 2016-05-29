@@ -14,7 +14,8 @@
   <body ng-app='mmdLoader' ng-controller="mainController" class="ng-cloak" ng-cloak>
 
   <div ng-show="isLoading" class="has-text-centered is-overlay" style="margin-top: 10%;">
-    <i class="fa fa-cog fa-spin fa-5x fa-fw"></i>
+    <i class="fa fa-cog fa-spin fa-5x fa-fw"></i><br />
+    <p>{{loadingMsg}}</p>
   </div>
 
   <div ng-show="!isLoading" class="is-overlay">
