@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+  <head>
+  <title>threejs MMD loader</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+
+  <link rel="stylesheet" href="node_modules/bulma/css/bulma.min.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css">
+  </head>
+
+  <body ng-app='mmdLoader' ng-controller="mainController" class="ng-cloak" ng-cloak>
+
+  <div ng-show="isLoading" class="has-text-centered is-overlay" style="margin-top: 10%;">
+    <i class="fa fa-cog fa-spin fa-5x fa-fw"></i>
+  </div>
+
+  <div ng-show="!isLoading" class="is-overlay">
+    <a ng-click="isOpenSetting = !isOpenSetting"><i class="fa fa-wrench fa-border fa-3x" aria-hidden="true"></i></a>
+
+
+    <div ng-show="isOpenSetting" style="margin: 1em;">
+      <div class="control">
+        <label class="label">model</label>
+          <a ng-click="modelSelected($index)" ng-repeat="model in models" ng-class="{'is-outlined': model.selected == false}" class="button is-primary">{{model.name}}</a>
+      </div>
+
+      <label class="label">dance</label>
+      <div class="control">
+          <a ng-click="danceSelected($index)" ng-repeat="dance in vmds" ng-class="{'is-outlined': dance.selected == false}" class="button is-info">{{dance.name}}</a>
+      </div>
+
+      <div style="margin-top: 1.6em;">
+        <a class="button is-danger is-outlined" ng-click="relender()">
+          restart
+        </a>
+      </div>
+
+      <div style="margin-top: 3em;">
+        <label class="label">info</label>
+        <a class="button" href="https://github.com/tic40/threejs_mmd" target="_blank">
+          <span class="icon">
+            <i class="fa fa-github"></i>
+          </span>
+          <span>GitHub</span>
+        </a>
+      </div>
+      <div class="copy" style="margin-top: 1em;">
+        <label class="label">copyright</label>
+        [model]<br />
+        <ul>
+          <li ng-repeat="model in models"><a href="{{model.sourceUrl}}" target="_blank">{{model.name}}</a></li>
+        </ul>
+        [dance]<br />
+        <ul>
+          <li ng-repeat="dance in vmds"><a href="{{dance.sourceUrl}}" target="_blank">{{dance.name}}</a></li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+
+
+  <script src="node_modules/three/build/three.min.js"></script>
+  <script src="node_modules/angular/angular.min.js"></script>
+
+  <script src="js/controls/TrackballControls.js"></script>
+  <script src="js/libs/charsetencoder.min.js"></script>
+  <script src="js/libs/ammo.js"></script>
+  <script src="js/loaders/TGALoader.js"></script>
+  <script src="js/loaders/MMDLoader.js"></script>
+  <script src="js/animation/CCDIKSolver.js"></script>
+  <script src="js/animation/MMDPhysics.js"></script>
+
+  <script src="js/Detector.js"></script>
+  <script src="js/libs/stats.min.js"></script>
+
+  <script src="js/main.js"></script>
+
+  </body>
+</html>
