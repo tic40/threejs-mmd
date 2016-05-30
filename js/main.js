@@ -26,6 +26,12 @@ app.controller('mainController', function($scope) {
       'sourceUrl': 'http://www.nicovideo.jp/watch/sm23614407',
     },
     {
+      'name': 'Remilia',
+      'path': 'mmd/models/remilia/remilia1.pmx',
+      'selected': false,
+      'sourceUrl': 'https://bowlroll.net/file/19618',
+    },
+    {
       'name': 'Ruby-chan',
       'path': 'mmd/models/ruby-chan/Ruby-chan.pmd',
       'selected': false,
@@ -35,9 +41,15 @@ app.controller('mainController', function($scope) {
 
   $scope.vmds = [
     {
+      'name': 'schrodingeiger no koneko',
+      'path': 'mmd/motions/schrodingeiger_no_koneko/Schrodingeiger_no_Koneko2.vmd',
+      'selected': true,
+      'sourceUrl': 'http://www.nicovideo.jp/watch/sm20114513',
+    },
+    {
       'name': 'nekomimi switch',
       'path': 'mmd/motions/nekomimi_switch/nekomimi_mikuv2.vmd',
-      'selected': true,
+      'selected': false,
       'sourceUrl': 'http://www.nicovideo.jp/watch/sm14365789',
     },
     {
@@ -95,7 +107,7 @@ app.controller('mainController', function($scope) {
     scene.add(ambient);
 
     // directional light
-    var directionalLight = new THREE.DirectionalLight(0xffffff, 0.7);
+    var directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
     directionalLight.position.set(0, -1, 0).normalize();
     scene.add(directionalLight);
 
