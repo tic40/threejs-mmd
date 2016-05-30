@@ -7,7 +7,6 @@ var app = angular.module('mmdLoader', []);
  */
 app.controller('mainController', function($scope) {
 
-  $scope.finishLender = false;
   var container, stats;
 
   var mesh, camera, scene, renderer, controls;
@@ -19,6 +18,12 @@ app.controller('mainController', function($scope) {
       'path': 'mmd/models/miku_lat/mikuVer2.31_Normal.pmd',
       'selected': true,
       'sourceUrl': 'http://seiga.nicovideo.jp/seiga/im3688289',
+    },
+    {
+      'name': 'Amatsukaze',
+      'path': 'mmd/models/amatsukaze/amatsukaze_noweapon.pmx',
+      'selected': false,
+      'sourceUrl': 'http://www.nicovideo.jp/watch/sm23614407',
     },
     {
       'name': 'Ruby-chan',
@@ -85,7 +90,7 @@ app.controller('mainController', function($scope) {
 
     scene = new THREE.Scene();
 
-    var ambient = new THREE.AmbientLight(0x666666);
+    var ambient = new THREE.AmbientLight(0x333333);
     scene.add(ambient);
 
     var directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
@@ -147,7 +152,6 @@ app.controller('mainController', function($scope) {
     window.addEventListener('resize', onWindowResize, false);
 
     animate();
-    $scope.finishLender = true;
   }
 
   function onWindowResize() {
@@ -162,16 +166,6 @@ app.controller('mainController', function($scope) {
     controls.handleResize();
   }
 
-  /*
-  function onDocumentMouseMove(event) {
-
-    mouseX = (event.clientX - windowHalfX) / 2;
-    mouseY = (event.clientY - windowHalfY) / 2;
-  }
-  */
-
-  //
-
   function animate() {
 
     requestAnimationFrame(animate);
@@ -180,12 +174,6 @@ app.controller('mainController', function($scope) {
   }
 
   function render() {
-
-  /*
-    camera.position.x += (-mouseX - camera.position.x) * .05;
-    camera.position.y += (-mouseY - camera.position.y) * .05;
-    camera.lookAt(scene.position);
-  */
 
     if (mesh) {
 
