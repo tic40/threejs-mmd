@@ -90,12 +90,21 @@ app.controller('mainController', function($scope) {
 
     scene = new THREE.Scene();
 
-    var ambient = new THREE.AmbientLight(0x333333);
+    // ambient light
+    var ambient = new THREE.AmbientLight(0xffffff, 0.4);
     scene.add(ambient);
 
-    var directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-    directionalLight.position.set(-1, 1, 1).normalize();
+    // directional light
+    var directionalLight = new THREE.DirectionalLight(0xffffff, 0.7);
+    directionalLight.position.set(0, -1, 0).normalize();
     scene.add(directionalLight);
+
+    // spot light
+/*
+    var spotLight = new THREE.SpotLight(0xffffff, 0.2);
+    spotLight.position.set(0, 0, 0).normalize();
+    scene.add(spotLight);
+*/
 
     renderer = new THREE.WebGLRenderer();
     renderer.setPixelRatio(window.devicePixelRatio);
