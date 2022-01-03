@@ -1,13 +1,10 @@
 # threejs mmd
 
 ## description
-work MMD 3D model on browser.
+Running MMD models on browser.
 
 ## DEMO
-http://tic40.github.io/threejs_mmd/
+http://tic40.github.io/threejs-mmd/
 
 ## reference
-I used the below as reference. thanks to https://github.com/takahirox
-http://takahirox.github.io/three.js/examples/#webgl_loader_mmd
-
-
+- http://takahirox.github.io/three.js/examples/#webgl_loader_mmd
