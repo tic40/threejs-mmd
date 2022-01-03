@@ -4,7 +4,7 @@
 Running MMD models on browser.
 
 ## DEMO
-http://tic40.github.io/threejs-mmd/
+https://tic40.github.io/threejs-mmd/
 
 ## reference
-- http://takahirox.github.io/three.js/examples/#webgl_loader_mmd
+- https://takahirox.github.io/three.js/examples/#webgl_loader_mmd
