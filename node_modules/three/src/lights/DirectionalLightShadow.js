@@ -1,15 +1,16 @@
-/**
- * @author mrdoob / http://mrdoob.com/
- */
+import { LightShadow } from './LightShadow.js';
+import { OrthographicCamera } from '../cameras/OrthographicCamera.js';
 
-THREE.DirectionalLightShadow = function ( light ) {
+class DirectionalLightShadow extends LightShadow {
 
-	THREE.LightShadow.call( this, new THREE.OrthographicCamera( - 5, 5, 5, - 5, 0.5, 500 ) );
+	constructor() {
 
-};
+		super( new OrthographicCamera( - 5, 5, 5, - 5, 0.5, 500 ) );
 
-THREE.DirectionalLightShadow.prototype = Object.assign( Object.create( THREE.LightShadow.prototype ), {
+	}
 
-	constructor: THREE.DirectionalLightShadow
+}
 
-} );
+DirectionalLightShadow.prototype.isDirectionalLightShadow = true;
+
+export { DirectionalLightShadow };

@@ -1,29 +1,25 @@
-/**
- * @author alteredq / http://alteredqualia.com/
- */
+import { Light } from './Light.js';
+import { Color } from '../math/Color.js';
+import { Object3D } from '../core/Object3D.js';
 
-THREE.HemisphereLight = function ( skyColor, groundColor, intensity ) {
+class HemisphereLight extends Light {
 
-	THREE.Light.call( this, skyColor, intensity );
+	constructor( skyColor, groundColor, intensity ) {
 
-	this.type = 'HemisphereLight';
+		super( skyColor, intensity );
 
-	this.castShadow = undefined;
+		this.type = 'HemisphereLight';
 
-	this.position.set( 0, 1, 0 );
-	this.updateMatrix();
+		this.position.copy( Object3D.DefaultUp );
+		this.updateMatrix();
 
-	this.groundColor = new THREE.Color( groundColor );
+		this.groundColor = new Color( groundColor );
 
-};
+	}
 
-THREE.HemisphereLight.prototype = Object.assign( Object.create( THREE.Light.prototype ), {
+	copy( source ) {
 
-	constructor: THREE.HemisphereLight,
-
-	copy: function ( source ) {
-
-		THREE.Light.prototype.copy.call( this, source );
+		Light.prototype.copy.call( this, source );
 
 		this.groundColor.copy( source.groundColor );
 
@@ -31,4 +27,8 @@ THREE.HemisphereLight.prototype = Object.assign( Object.create( THREE.Light.prot
 
 	}
 
-} );
+}
+
+HemisphereLight.prototype.isHemisphereLight = true;
+
+export { HemisphereLight };

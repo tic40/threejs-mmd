@@ -1,31 +1,15 @@
+import { InterpolateDiscrete } from '../../constants.js';
+import { KeyframeTrack } from '../KeyframeTrack.js';
+
 /**
- *
  * A Track that interpolates Strings
- *
- *
- * @author Ben Houston / http://clara.io/
- * @author David Sarno / http://lighthaus.us/
- * @author tschw
  */
+class StringKeyframeTrack extends KeyframeTrack {}
 
-THREE.StringKeyframeTrack = function ( name, times, values, interpolation ) {
+StringKeyframeTrack.prototype.ValueTypeName = 'string';
+StringKeyframeTrack.prototype.ValueBufferType = Array;
+StringKeyframeTrack.prototype.DefaultInterpolation = InterpolateDiscrete;
+StringKeyframeTrack.prototype.InterpolantFactoryMethodLinear = undefined;
+StringKeyframeTrack.prototype.InterpolantFactoryMethodSmooth = undefined;
 
-	THREE.KeyframeTrack.call( this, name, times, values, interpolation );
-
-};
-
-THREE.StringKeyframeTrack.prototype =
-		Object.assign( Object.create( THREE.KeyframeTrack.prototype ), {
-
-	constructor: THREE.StringKeyframeTrack,
-
-	ValueTypeName: 'string',
-	ValueBufferType: Array,
-
-	DefaultInterpolation: THREE.InterpolateDiscrete,
-
-	InterpolantFactoryMethodLinear: undefined,
-
-	InterpolantFactoryMethodSmooth: undefined
-
-} );
+export { StringKeyframeTrack };

@@ -1,39 +1,74 @@
-/**************************************************************
- *	Quadratic Bezier curve
- **************************************************************/
+import { Curve } from '../core/Curve.js';
+import { QuadraticBezier } from '../core/Interpolations.js';
+import { Vector2 } from '../../math/Vector2.js';
 
+class QuadraticBezierCurve extends Curve {
 
-THREE.QuadraticBezierCurve = function ( v0, v1, v2 ) {
+	constructor( v0 = new Vector2(), v1 = new Vector2(), v2 = new Vector2() ) {
 
-	this.v0 = v0;
-	this.v1 = v1;
-	this.v2 = v2;
+		super();
 
-};
+		this.type = 'QuadraticBezierCurve';
 
-THREE.QuadraticBezierCurve.prototype = Object.create( THREE.Curve.prototype );
-THREE.QuadraticBezierCurve.prototype.constructor = THREE.QuadraticBezierCurve;
+		this.v0 = v0;
+		this.v1 = v1;
+		this.v2 = v2;
 
+	}
 
-THREE.QuadraticBezierCurve.prototype.getPoint = function ( t ) {
+	getPoint( t, optionalTarget = new Vector2() ) {
 
-	var b2 = THREE.ShapeUtils.b2;
+		const point = optionalTarget;
 
-	return new THREE.Vector2(
-		b2( t, this.v0.x, this.v1.x, this.v2.x ),
-		b2( t, this.v0.y, this.v1.y, this.v2.y )
-	);
+		const v0 = this.v0, v1 = this.v1, v2 = this.v2;
 
-};
+		point.set(
+			QuadraticBezier( t, v0.x, v1.x, v2.x ),
+			QuadraticBezier( t, v0.y, v1.y, v2.y )
+		);
 
+		return point;
 
-THREE.QuadraticBezierCurve.prototype.getTangent = function( t ) {
+	}
 
-	var tangentQuadraticBezier = THREE.CurveUtils.tangentQuadraticBezier;
+	copy( source ) {
 
-	return new THREE.Vector2(
-		tangentQuadraticBezier( t, this.v0.x, this.v1.x, this.v2.x ),
-		tangentQuadraticBezier( t, this.v0.y, this.v1.y, this.v2.y )
-	).normalize();
+		super.copy( source );
 
-};
+		this.v0.copy( source.v0 );
+		this.v1.copy( source.v1 );
+		this.v2.copy( source.v2 );
+
+		return this;
+
+	}
+
+	toJSON() {
+
+		const data = super.toJSON();
+
+		data.v0 = this.v0.toArray();
+		data.v1 = this.v1.toArray();
+		data.v2 = this.v2.toArray();
+
+		return data;
+
+	}
+
+	fromJSON( json ) {
+
+		super.fromJSON( json );
+
+		this.v0.fromArray( json.v0 );
+		this.v1.fromArray( json.v1 );
+		this.v2.fromArray( json.v2 );
+
+		return this;
+
+	}
+
+}
+
+QuadraticBezierCurve.prototype.isQuadraticBezierCurve = true;
+
+export { QuadraticBezierCurve };

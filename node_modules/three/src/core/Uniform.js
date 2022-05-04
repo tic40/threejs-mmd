@@ -1,33 +1,24 @@
-/**
- * @author mrdoob / http://mrdoob.com/
- */
+class Uniform {
 
-THREE.Uniform = function ( value ) {
+	constructor( value ) {
 
-	if ( typeof value === 'string' ) {
+		if ( typeof value === 'string' ) {
 
-		console.warn( 'THREE.Uniform: Type parameter is no longer needed.' );
-		value = arguments[ 1 ];
+			console.warn( 'THREE.Uniform: Type parameter is no longer needed.' );
+			value = arguments[ 1 ];
 
-	}
+		}
 
-	this.value = value;
-
-	this.dynamic = false;
-
-};
-
-THREE.Uniform.prototype = {
-
-	constructor: THREE.Uniform,
-
-	onUpdate: function ( callback ) {
-
-		this.dynamic = true;
-		this.onUpdateCallback = callback;
-
-		return this;
+		this.value = value;
 
 	}
 
-};
+	clone() {
+
+		return new Uniform( this.value.clone === undefined ? this.value : this.value.clone() );
+
+	}
+
+}
+
+export { Uniform };
