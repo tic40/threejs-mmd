@@ -29,7 +29,6 @@ const Home: NextPage = () => {
       const renderer = new WebGLRenderer()
       renderer.setPixelRatio(window.devicePixelRatio)
       renderer.setSize(w, h)
-      renderer.setClearColor(new Color(0xffffff))
       mountRef.current?.appendChild(renderer.domElement)
 
       const scene = new Scene()
@@ -55,8 +54,8 @@ const Home: NextPage = () => {
       // load model
       const loader = new MMDLoader()
       loader.loadWithAnimation(
-        '../models/lat_miku/Lat式ミクVer2.31_White.pmd',
-        '../motions/schrodingeiger_no_koneko/Schrodingeiger_no_Koneko1.vmd',
+        './models/lat_miku/Lat式ミクVer2.31_White.pmd',
+        './motions/schrodingeiger_no_koneko/Schrodingeiger_no_Koneko1.vmd',
         // called when the resource is loaded
         ({ mesh, animation }) => {
           helper.add(mesh, {
