@@ -18,120 +18,97 @@
  * };
  */
 
-THREE.CCDIKSolver = function ( mesh ) {
-
-	this.mesh = mesh;
-
-};
+THREE.CCDIKSolver = function (mesh) {
+  this.mesh = mesh
+}
 
 THREE.CCDIKSolver.prototype = {
+  constructor: THREE.CCDIKSolver,
 
-	constructor: THREE.CCDIKSolver,
+  update: function () {
+    var effectorVec = new THREE.Vector3()
+    var targetVec = new THREE.Vector3()
+    var axis = new THREE.Vector3()
+    var q = new THREE.Quaternion()
 
-	update: function () {
+    var bones = this.mesh.skeleton.bones
+    var iks = this.mesh.geometry.iks
 
-		var effectorVec = new THREE.Vector3();
-		var targetVec = new THREE.Vector3();
-		var axis = new THREE.Vector3();
-		var q = new THREE.Quaternion();
+    // for reference overhead reduction in loop
+    var math = Math
 
-		var bones = this.mesh.skeleton.bones;
-		var iks = this.mesh.geometry.iks;
+    for (var i = 0, il = iks.length; i < il; i++) {
+      var ik = iks[i]
+      var effector = bones[ik.effector]
+      var target = bones[ik.target]
+      var targetPos = target.getWorldPosition()
+      var links = ik.links
+      var iteration = ik.iteration !== undefined ? ik.iteration : 1
 
-		// for reference overhead reduction in loop
-		var math = Math;
+      for (var j = 0; j < iteration; j++) {
+        for (var k = 0, kl = links.length; k < kl; k++) {
+          var link = bones[links[k].index]
+          var limitation = links[k].limitation
+          var linkPos = link.getWorldPosition()
+          var invLinkQ = link.getWorldQuaternion().inverse()
+          var effectorPos = effector.getWorldPosition()
 
-		for ( var i = 0, il = iks.length; i < il; i++ ) {
+          // work in link world
+          effectorVec.subVectors(effectorPos, linkPos)
+          effectorVec.applyQuaternion(invLinkQ)
+          effectorVec.normalize()
 
-			var ik = iks[ i ];
-			var effector = bones[ ik.effector ];
-			var target = bones[ ik.target ];
-			var targetPos = target.getWorldPosition();
-			var links = ik.links;
-			var iteration = ik.iteration !== undefined ? ik.iteration : 1;
+          targetVec.subVectors(targetPos, linkPos)
+          targetVec.applyQuaternion(invLinkQ)
+          targetVec.normalize()
 
-			for ( var j = 0; j < iteration; j++ ) {
+          var angle = targetVec.dot(effectorVec)
 
-				for ( var k = 0, kl = links.length; k < kl; k++ ) {
+          // TODO: continue (or break) the loop for the performance
+          //       if no longer needs to rotate (angle > 1.0-1e-5 ?)
 
-					var link = bones[ links[ k ].index ];
-					var limitation = links[ k ].limitation;
-					var linkPos = link.getWorldPosition();
-					var invLinkQ = link.getWorldQuaternion().inverse();
-					var effectorPos = effector.getWorldPosition();
+          if (angle > 1.0) {
+            angle = 1.0
+          } else if (angle < -1.0) {
+            angle = -1.0
+          }
 
-					// work in link world
-					effectorVec.subVectors( effectorPos, linkPos );
-					effectorVec.applyQuaternion( invLinkQ );
-					effectorVec.normalize();
+          angle = math.acos(angle)
 
-					targetVec.subVectors( targetPos, linkPos );
-					targetVec.applyQuaternion( invLinkQ );
-					targetVec.normalize();
+          if (ik.minAngle !== undefined && angle < ik.minAngle) {
+            angle = ik.minAngle
+          }
 
-					var angle = targetVec.dot( effectorVec );
+          if (ik.maxAngle !== undefined && angle > ik.maxAngle) {
+            angle = ik.maxAngle
+          }
 
-					// TODO: continue (or break) the loop for the performance
-					//       if no longer needs to rotate (angle > 1.0-1e-5 ?)
+          axis.crossVectors(effectorVec, targetVec)
+          axis.normalize()
 
-					if ( angle > 1.0 ) {
+          q.setFromAxisAngle(axis, angle)
+          link.quaternion.multiply(q)
 
-						angle = 1.0;
+          // TODO: re-consider the limitation specification
+          if (limitation !== undefined) {
+            var c = link.quaternion.w
 
-					} else if ( angle < -1.0 ) {
+            if (c > 1.0) {
+              c = 1.0
+            }
 
-						angle = -1.0;
+            var c2 = math.sqrt(1 - c * c)
+            link.quaternion.set(
+              limitation.x * c2,
+              limitation.y * c2,
+              limitation.z * c2,
+              c
+            )
+          }
 
-					}
-
-					angle = math.acos( angle );
-
-					if ( ik.minAngle !== undefined && angle < ik.minAngle ) {
-
-						angle = ik.minAngle;
-
-					}
-
-					if ( ik.maxAngle !== undefined && angle > ik.maxAngle ) {
-
-						angle = ik.maxAngle;
-
-					}
-
-					axis.crossVectors( effectorVec, targetVec );
-					axis.normalize();
-
-					q.setFromAxisAngle( axis, angle );
-					link.quaternion.multiply( q );
-
-					// TODO: re-consider the limitation specification
-					if ( limitation !== undefined ) {
-
-						var c = link.quaternion.w;
-
-						if ( c > 1.0 ) {
-
-							c = 1.0;
-
-						}
-
-						var c2 = math.sqrt( 1 - c * c );
-						link.quaternion.set( limitation.x * c2,
-						                     limitation.y * c2,
-						                     limitation.z * c2,
-						                     c );
-
-					}
-
-					link.updateMatrixWorld( true );
-
-				}
-
-			}
-
-		}
-
-	}
-
-};
-
+          link.updateMatrixWorld(true)
+        }
+      }
+    }
+  },
+}
