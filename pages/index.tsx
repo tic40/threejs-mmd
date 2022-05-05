@@ -26,7 +26,7 @@ const Home: NextPage = () => {
       const scene = new THREE.Scene()
       // camera
       const camera = new THREE.PerspectiveCamera(50, w / h, 2, 2000)
-      camera.position.set(0, 20, 45)
+      camera.position.set(0, 20, 40)
       // ambientLight
       const ambientLight = new THREE.AmbientLight(0xffffff, 0.6)
       scene.add(ambientLight)
@@ -75,6 +75,14 @@ const Home: NextPage = () => {
         title={process.env.siteName || ''}
         description={process.env.siteName || ''}
       />
+      <a
+        className="absolute bottom-2 left-2 bg-transparent text-blue-700 py-1 px-2 border border-blue-500 rounded"
+        href="https://github.com/tic40/threejs-mmd"
+        target="_blank"
+        rel="noreferrer"
+      >
+        GitHub
+      </a>
       <div ref={mountRef} />
     </>
   )
