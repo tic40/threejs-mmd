@@ -101,7 +101,18 @@ const Home: NextPage = () => {
         style={loaded ? { display: 'none' } : { display: 'block' }}
       ></div>
       <a
-        className="absolute bottom-2 left-2 bg-transparent text-gray-700 py-1 px-2 border border-gray-500 rounded"
+        className="
+          absolute
+          bottom-2
+          left-2
+          bg-transparent
+          text-gray-700
+          py-1
+          px-2
+          border
+          border-gray-500
+          rounded
+        "
         href="https://github.com/tic40/threejs-mmd"
         target="_blank"
         rel="noreferrer"
