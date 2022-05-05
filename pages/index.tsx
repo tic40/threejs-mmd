@@ -14,11 +14,13 @@ import {
 import { MMDLoader } from 'three/examples/jsm/loaders/MMDLoader'
 import { MMDAnimationHelper } from 'three/examples/jsm/animation/MMDAnimationHelper'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
+import { useState } from 'react'
 import Meta from '../components/meta'
 import Ammo from 'ammojs-typed'
 
 const Home: NextPage = () => {
   const mountRef = useRef<HTMLDivElement>(null)
+  const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
     const w = window.innerWidth
@@ -63,6 +65,7 @@ const Home: NextPage = () => {
             physics: true,
           })
           scene.add(mesh)
+          setLoaded(true)
         },
         // called when loading is in progresses
         (xhr) => console.info((xhr.loaded / xhr.total) * 100 + '% loaded'),
@@ -83,8 +86,22 @@ const Home: NextPage = () => {
         title={process.env.siteName || ''}
         description={process.env.siteName || ''}
       />
+      <div
+        className="
+          absolute
+          top-1/2
+          left-1/2
+          animate-ping
+          h-5
+          w-5
+          bg-gray-600
+          rounded-full
+        "
+        role="status"
+        style={loaded ? { display: 'none' } : { display: 'block' }}
+      ></div>
       <a
-        className="absolute bottom-2 left-2 bg-transparent text-blue-700 py-1 px-2 border border-blue-500 rounded"
+        className="absolute bottom-2 left-2 bg-transparent text-gray-700 py-1 px-2 border border-gray-500 rounded"
         href="https://github.com/tic40/threejs-mmd"
         target="_blank"
         rel="noreferrer"
