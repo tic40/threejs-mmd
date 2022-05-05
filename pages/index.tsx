@@ -1,22 +1,20 @@
-import { useEffect, useRef } from 'react'
-
 import type { NextPage } from 'next'
+import { useEffect, useRef, useState } from 'react'
 import {
-  WebGLRenderer,
-  Color,
-  Scene,
-  PerspectiveCamera,
   AmbientLight,
+  Clock,
+  Color,
   DirectionalLight,
   GridHelper,
-  Clock,
+  PerspectiveCamera,
+  Scene,
+  WebGLRenderer,
 } from 'three'
-import { MMDLoader } from 'three/examples/jsm/loaders/MMDLoader'
 import { MMDAnimationHelper } from 'three/examples/jsm/animation/MMDAnimationHelper'
+import { MMDLoader } from 'three/examples/jsm/loaders/MMDLoader'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
-import { useState } from 'react'
-import Meta from '../components/meta'
 import Ammo from 'ammojs-typed'
+import Meta from '../components/meta'
 
 const Home: NextPage = () => {
   const mountRef = useRef<HTMLDivElement>(null)
@@ -34,6 +32,8 @@ const Home: NextPage = () => {
       mountRef.current?.appendChild(renderer.domElement)
 
       const scene = new Scene()
+      const clock = new Clock()
+      const helper = new MMDAnimationHelper()
       // camera
       const camera = new PerspectiveCamera(50, w / h, 2, 2000)
       camera.position.set(0, 10, 50)
@@ -50,15 +50,12 @@ const Home: NextPage = () => {
       scene.background = new Color(0xf0f0f0)
       // control
       new OrbitControls(camera, renderer.domElement)
-      const clock = new Clock()
 
-      const helper = new MMDAnimationHelper()
       // load model
       const loader = new MMDLoader()
       loader.loadWithAnimation(
         './models/lat_miku/Lat式ミクVer2.31_White.pmd',
         './motions/schrodingeiger_no_koneko/Schrodingeiger_no_Koneko1.vmd',
-        // called when the resource is loaded
         ({ mesh, animation }) => {
           helper.add(mesh, {
             animation: animation,
@@ -67,7 +64,6 @@ const Home: NextPage = () => {
           scene.add(mesh)
           setLoaded(true)
         },
-        // called when loading is in progresses
         (xhr) => console.info((xhr.loaded / xhr.total) * 100 + '% loaded'),
         (e) => console.error(e)
       )
