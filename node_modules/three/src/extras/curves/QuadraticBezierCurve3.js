@@ -1,27 +1,75 @@
-/**************************************************************
- *	Quadratic Bezier 3D curve
- **************************************************************/
+import { Curve } from '../core/Curve.js';
+import { QuadraticBezier } from '../core/Interpolations.js';
+import { Vector3 } from '../../math/Vector3.js';
 
-THREE.QuadraticBezierCurve3 = THREE.Curve.create(
+class QuadraticBezierCurve3 extends Curve {
 
-	function ( v0, v1, v2 ) {
+	constructor( v0 = new Vector3(), v1 = new Vector3(), v2 = new Vector3() ) {
+
+		super();
+
+		this.type = 'QuadraticBezierCurve3';
 
 		this.v0 = v0;
 		this.v1 = v1;
 		this.v2 = v2;
 
-	},
+	}
 
-	function ( t ) {
+	getPoint( t, optionalTarget = new Vector3() ) {
 
-		var b2 = THREE.ShapeUtils.b2;		
+		const point = optionalTarget;
 
-		return new THREE.Vector3(
-			b2( t, this.v0.x, this.v1.x, this.v2.x ),
-			b2( t, this.v0.y, this.v1.y, this.v2.y ),
-			b2( t, this.v0.z, this.v1.z, this.v2.z )
+		const v0 = this.v0, v1 = this.v1, v2 = this.v2;
+
+		point.set(
+			QuadraticBezier( t, v0.x, v1.x, v2.x ),
+			QuadraticBezier( t, v0.y, v1.y, v2.y ),
+			QuadraticBezier( t, v0.z, v1.z, v2.z )
 		);
+
+		return point;
 
 	}
 
-);
+	copy( source ) {
+
+		super.copy( source );
+
+		this.v0.copy( source.v0 );
+		this.v1.copy( source.v1 );
+		this.v2.copy( source.v2 );
+
+		return this;
+
+	}
+
+	toJSON() {
+
+		const data = super.toJSON();
+
+		data.v0 = this.v0.toArray();
+		data.v1 = this.v1.toArray();
+		data.v2 = this.v2.toArray();
+
+		return data;
+
+	}
+
+	fromJSON( json ) {
+
+		super.fromJSON( json );
+
+		this.v0.fromArray( json.v0 );
+		this.v1.fromArray( json.v1 );
+		this.v2.fromArray( json.v2 );
+
+		return this;
+
+	}
+
+}
+
+QuadraticBezierCurve3.prototype.isQuadraticBezierCurve3 = true;
+
+export { QuadraticBezierCurve3 };

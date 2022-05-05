@@ -1,8 +1,4 @@
-/**
- * @author mrdoob / http://mrdoob.com/
- */
-
-THREE.Cache = {
+const Cache = {
 
 	enabled: false,
 
@@ -41,3 +37,6 @@ THREE.Cache = {
 	}
 
 };
+
+
+export { Cache };

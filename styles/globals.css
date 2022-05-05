@@ -1,0 +1,12 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+@layer base {
+  a {
+    @apply hover:opacity-50;
+  }
+  a.link {
+    @apply text-blue-500;
+  }
+}

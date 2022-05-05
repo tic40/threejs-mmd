@@ -1,10 +1,17 @@
-# threejs mmd
+# threejs-mmd
 
-## description
-Running MMD models on browser.
+- [WEB](https://tic40.github.io/threejs-mmd/)
 
-## DEMO
-https://tic40.github.io/threejs-mmd/
+## Getting Started
 
-## reference
-- https://takahirox.github.io/three.js/examples/#webgl_loader_mmd
+First, run the development server:
+
+```bash
+npm run dev
+# or
+yarn dev
+```
+
+## Deploy
+
+Just merge into the main branch and it will be deployed automatically to GitHub pages by GitHub actions.

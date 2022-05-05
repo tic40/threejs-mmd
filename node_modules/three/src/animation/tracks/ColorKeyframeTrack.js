@@ -1,32 +1,15 @@
+import { KeyframeTrack } from '../KeyframeTrack.js';
+
 /**
- *
  * A Track of keyframe values that represent color.
- *
- *
- * @author Ben Houston / http://clara.io/
- * @author David Sarno / http://lighthaus.us/
- * @author tschw
  */
+class ColorKeyframeTrack extends KeyframeTrack {}
 
-THREE.ColorKeyframeTrack = function ( name, times, values, interpolation ) {
+ColorKeyframeTrack.prototype.ValueTypeName = 'color';
+// ValueBufferType is inherited
+// DefaultInterpolation is inherited
 
-	THREE.KeyframeTrack.call( this, name, times, values, interpolation );
+// Note: Very basic implementation and nothing special yet.
+// However, this is the place for color space parameterization.
 
-};
-
-THREE.ColorKeyframeTrack.prototype =
-		Object.assign( Object.create( THREE.KeyframeTrack.prototype ), {
-
-	constructor: THREE.ColorKeyframeTrack,
-
-	ValueTypeName: 'color'
-
-	// ValueBufferType is inherited
-
-	// DefaultInterpolation is inherited
-
-
-	// Note: Very basic implementation and nothing special yet.
-	// However, this is the place for color space parameterization.
-
-} );
+export { ColorKeyframeTrack };

@@ -2,66 +2,65 @@
  * Uniform Utilities
  */
 
-THREE.UniformsUtils = {
+export function cloneUniforms( src ) {
 
-	merge: function ( uniforms ) {
+	const dst = {};
 
-		var merged = {};
+	for ( const u in src ) {
 
-		for ( var u = 0; u < uniforms.length; u ++ ) {
+		dst[ u ] = {};
 
-			var tmp = this.clone( uniforms[ u ] );
+		for ( const p in src[ u ] ) {
 
-			for ( var p in tmp ) {
+			const property = src[ u ][ p ];
 
-				merged[ p ] = tmp[ p ];
+			if ( property && ( property.isColor ||
+				property.isMatrix3 || property.isMatrix4 ||
+				property.isVector2 || property.isVector3 || property.isVector4 ||
+				property.isTexture || property.isQuaternion ) ) {
 
-			}
+				dst[ u ][ p ] = property.clone();
 
-		}
+			} else if ( Array.isArray( property ) ) {
 
-		return merged;
+				dst[ u ][ p ] = property.slice();
 
-	},
+			} else {
 
-	clone: function ( uniforms_src ) {
-
-		var uniforms_dst = {};
-
-		for ( var u in uniforms_src ) {
-
-			uniforms_dst[ u ] = {};
-
-			for ( var p in uniforms_src[ u ] ) {
-
-				var parameter_src = uniforms_src[ u ][ p ];
-
-				if ( parameter_src instanceof THREE.Color ||
-					 parameter_src instanceof THREE.Vector2 ||
-					 parameter_src instanceof THREE.Vector3 ||
-					 parameter_src instanceof THREE.Vector4 ||
-					 parameter_src instanceof THREE.Matrix3 ||
-					 parameter_src instanceof THREE.Matrix4 ||
-					 parameter_src instanceof THREE.Texture ) {
-
-					uniforms_dst[ u ][ p ] = parameter_src.clone();
-
-				} else if ( Array.isArray( parameter_src ) ) {
-
-					uniforms_dst[ u ][ p ] = parameter_src.slice();
-
-				} else {
-
-					uniforms_dst[ u ][ p ] = parameter_src;
-
-				}
+				dst[ u ][ p ] = property;
 
 			}
 
 		}
-
-		return uniforms_dst;
 
 	}
 
-};
+	return dst;
+
+}
+
+export function mergeUniforms( uniforms ) {
+
+	const merged = {};
+
+	for ( let u = 0; u < uniforms.length; u ++ ) {
+
+		const tmp = cloneUniforms( uniforms[ u ] );
+
+		for ( const p in tmp ) {
+
+			merged[ p ] = tmp[ p ];
+
+		}
+
+	}
+
+	return merged;
+
+}
+
+// Legacy
+
+const UniformsUtils = { clone: cloneUniforms, merge: mergeUniforms };
+
+export { UniformsUtils };

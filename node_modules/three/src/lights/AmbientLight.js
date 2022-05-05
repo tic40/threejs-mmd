@@ -1,19 +1,17 @@
-/**
- * @author mrdoob / http://mrdoob.com/
- */
+import { Light } from './Light.js';
 
-THREE.AmbientLight = function ( color, intensity ) {
+class AmbientLight extends Light {
 
-	THREE.Light.call( this, color, intensity );
+	constructor( color, intensity ) {
 
-	this.type = 'AmbientLight';
+		super( color, intensity );
 
-	this.castShadow = undefined;
+		this.type = 'AmbientLight';
 
-};
+	}
 
-THREE.AmbientLight.prototype = Object.assign( Object.create( THREE.Light.prototype ), {
+}
 
-	constructor: THREE.AmbientLight
+AmbientLight.prototype.isAmbientLight = true;
 
-} );
+export { AmbientLight };

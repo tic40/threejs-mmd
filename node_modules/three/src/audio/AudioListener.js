@@ -1,33 +1,44 @@
-/**
- * @author mrdoob / http://mrdoob.com/
- */
+import { Vector3 } from '../math/Vector3.js';
+import { Quaternion } from '../math/Quaternion.js';
+import { Clock } from '../core/Clock.js';
+import { Object3D } from '../core/Object3D.js';
+import { AudioContext } from './AudioContext.js';
 
-THREE.AudioListener = function () {
+const _position = /*@__PURE__*/ new Vector3();
+const _quaternion = /*@__PURE__*/ new Quaternion();
+const _scale = /*@__PURE__*/ new Vector3();
+const _orientation = /*@__PURE__*/ new Vector3();
 
-	THREE.Object3D.call( this );
+class AudioListener extends Object3D {
 
-	this.type = 'AudioListener';
+	constructor() {
 
-	this.context = THREE.AudioContext;
+		super();
 
-	this.gain = this.context.createGain();
-	this.gain.connect( this.context.destination );
+		this.type = 'AudioListener';
 
-	this.filter = null;
+		this.context = AudioContext.getContext();
 
-};
+		this.gain = this.context.createGain();
+		this.gain.connect( this.context.destination );
 
-THREE.AudioListener.prototype = Object.assign( Object.create( THREE.Object3D.prototype ), {
+		this.filter = null;
 
-	constructor: THREE.AudioListener,
+		this.timeDelta = 0;
 
-	getInput: function () {
+		// private
+
+		this._clock = new Clock();
+
+	}
+
+	getInput() {
 
 		return this.gain;
 
-	},
+	}
 
-	removeFilter: function ( ) {
+	removeFilter() {
 
 		if ( this.filter !== null ) {
 
@@ -38,15 +49,17 @@ THREE.AudioListener.prototype = Object.assign( Object.create( THREE.Object3D.pro
 
 		}
 
-	},
+		return this;
 
-	getFilter: function () {
+	}
+
+	getFilter() {
 
 		return this.filter;
 
-	},
+	}
 
-	setFilter: function ( value ) {
+	setFilter( value ) {
 
 		if ( this.filter !== null ) {
 
@@ -63,44 +76,62 @@ THREE.AudioListener.prototype = Object.assign( Object.create( THREE.Object3D.pro
 		this.gain.connect( this.filter );
 		this.filter.connect( this.context.destination );
 
-	},
+		return this;
 
-	getMasterVolume: function () {
+	}
+
+	getMasterVolume() {
 
 		return this.gain.gain.value;
 
-	},
+	}
 
-	setMasterVolume: function ( value ) {
+	setMasterVolume( value ) {
 
-		this.gain.gain.value = value;
+		this.gain.gain.setTargetAtTime( value, this.context.currentTime, 0.01 );
 
-	},
+		return this;
 
-	updateMatrixWorld: ( function () {
+	}
 
-		var position = new THREE.Vector3();
-		var quaternion = new THREE.Quaternion();
-		var scale = new THREE.Vector3();
+	updateMatrixWorld( force ) {
 
-		var orientation = new THREE.Vector3();
+		super.updateMatrixWorld( force );
 
-		return function updateMatrixWorld( force ) {
+		const listener = this.context.listener;
+		const up = this.up;
 
-			THREE.Object3D.prototype.updateMatrixWorld.call( this, force );
+		this.timeDelta = this._clock.getDelta();
 
-			var listener = this.context.listener;
-			var up = this.up;
+		this.matrixWorld.decompose( _position, _quaternion, _scale );
 
-			this.matrixWorld.decompose( position, quaternion, scale );
+		_orientation.set( 0, 0, - 1 ).applyQuaternion( _quaternion );
 
-			orientation.set( 0, 0, - 1 ).applyQuaternion( quaternion );
+		if ( listener.positionX ) {
 
-			listener.setPosition( position.x, position.y, position.z );
-			listener.setOrientation( orientation.x, orientation.y, orientation.z, up.x, up.y, up.z );
+			// code path for Chrome (see #14393)
 
-		};
+			const endTime = this.context.currentTime + this.timeDelta;
 
-	} )()
+			listener.positionX.linearRampToValueAtTime( _position.x, endTime );
+			listener.positionY.linearRampToValueAtTime( _position.y, endTime );
+			listener.positionZ.linearRampToValueAtTime( _position.z, endTime );
+			listener.forwardX.linearRampToValueAtTime( _orientation.x, endTime );
+			listener.forwardY.linearRampToValueAtTime( _orientation.y, endTime );
+			listener.forwardZ.linearRampToValueAtTime( _orientation.z, endTime );
+			listener.upX.linearRampToValueAtTime( up.x, endTime );
+			listener.upY.linearRampToValueAtTime( up.y, endTime );
+			listener.upZ.linearRampToValueAtTime( up.z, endTime );
 
-} );
+		} else {
+
+			listener.setPosition( _position.x, _position.y, _position.z );
+			listener.setOrientation( _orientation.x, _orientation.y, _orientation.z, up.x, up.y, up.z );
+
+		}
+
+	}
+
+}
+
+export { AudioListener };
