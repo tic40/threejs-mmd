@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 
+import Meta from '../components/meta'
 import type { NextPage } from 'next'
 import * as THREE from 'three'
 import { MMDLoader } from 'three/examples/jsm/loaders/MMDLoader'
@@ -56,7 +57,15 @@ const Home: NextPage = () => {
     }
   }, [])
 
-  return <div ref={mountRef} />
+  return (
+    <>
+      <Meta
+        title={process.env.siteName || ''}
+        description={process.env.siteName || ''}
+      />
+      <div ref={mountRef} />
+    </>
+  )
 }
 
 export default Home
