@@ -1,7 +1,16 @@
 import { useEffect, useRef } from 'react'
 
 import type { NextPage } from 'next'
-import * as THREE from 'three'
+import {
+  WebGLRenderer,
+  Color,
+  Scene,
+  PerspectiveCamera,
+  AmbientLight,
+  DirectionalLight,
+  GridHelper,
+  Clock,
+} from 'three'
 import { MMDLoader } from 'three/examples/jsm/loaders/MMDLoader'
 import { MMDAnimationHelper } from 'three/examples/jsm/animation/MMDAnimationHelper'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
@@ -17,30 +26,30 @@ const Home: NextPage = () => {
 
     Ammo().then((Ammo) => {
       Ammo = Ammo
-      const renderer = new THREE.WebGLRenderer()
+      const renderer = new WebGLRenderer()
       renderer.setPixelRatio(window.devicePixelRatio)
       renderer.setSize(w, h)
-      renderer.setClearColor(new THREE.Color(0xffffff))
+      renderer.setClearColor(new Color(0xffffff))
       mountRef.current?.appendChild(renderer.domElement)
 
-      const scene = new THREE.Scene()
+      const scene = new Scene()
       // camera
-      const camera = new THREE.PerspectiveCamera(50, w / h, 2, 2000)
-      camera.position.set(0, 20, 40)
+      const camera = new PerspectiveCamera(50, w / h, 2, 2000)
+      camera.position.set(0, 25, 30)
       // ambientLight
-      const ambientLight = new THREE.AmbientLight(0xffffff, 0.6)
+      const ambientLight = new AmbientLight(0xffffff, 0.6)
       scene.add(ambientLight)
       // directionalLight
-      const directionalLight = new THREE.DirectionalLight(0xffe2b9, 0.4)
+      const directionalLight = new DirectionalLight(0xffe2b9, 0.4)
       directionalLight.position.set(1, 0.75, 0.5).normalize()
       scene.add(directionalLight)
       // grid
-      const gridHelper = new THREE.GridHelper(1000, 100)
+      const gridHelper = new GridHelper(1000, 100)
       scene.add(gridHelper)
-      scene.background = new THREE.Color(0xf0f0f0)
+      scene.background = new Color(0xf0f0f0)
       // control
-      const controls = new OrbitControls(camera, renderer.domElement)
-      const clock = new THREE.Clock()
+      new OrbitControls(camera, renderer.domElement)
+      const clock = new Clock()
 
       const helper = new MMDAnimationHelper()
       // load model
