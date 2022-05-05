@@ -35,7 +35,7 @@ const Home: NextPage = () => {
       const scene = new Scene()
       // camera
       const camera = new PerspectiveCamera(50, w / h, 2, 2000)
-      camera.position.set(0, 25, 30)
+      camera.position.set(0, 10, 50)
       // ambientLight
       const ambientLight = new AmbientLight(0xffffff, 0.6)
       scene.add(ambientLight)
