@@ -113,7 +113,7 @@ const Home: NextPage = () => {
             physics: true,
           })
           scene.add(mesh)
-          setLoaded(true)
+          setInterval(() => setLoaded(true), 500)
         },
         (xhr) => console.info((xhr.loaded / xhr.total) * 100 + '% loaded'),
         (e) => console.error(e)
@@ -167,7 +167,7 @@ const Home: NextPage = () => {
       >
         GitHub
       </a>
-      <div ref={mountRef} />
+      <div ref={mountRef} style={{ display: loaded ? 'block' : 'none' }} />
     </>
   )
 }
