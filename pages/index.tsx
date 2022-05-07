@@ -37,6 +37,8 @@ interface State {
   controls: OrbitControls | null
   currentModel: SkinnedMesh | null
   currentMotion: AnimationClip | null
+  modelId: number
+  motionId: number
 }
 
 const initialState = () => ({
@@ -53,13 +55,13 @@ const initialState = () => ({
   controls: null,
   currentModel: null,
   currentMotion: null,
+  modelId: 0,
+  motionId: 0,
 })
 
 const Home: NextPage = () => {
   const mountRef = useRef<HTMLDivElement>(null)
   const [loading, setLoading] = useState(false)
-  const [modelId, setModelId] = useState(0)
-  const [motionId, setMotionId] = useState(randomPick(MOTIONS.length))
   const [state, setState] = useState<State>(initialState())
 
   useEffect(() => {
@@ -73,10 +75,6 @@ const Home: NextPage = () => {
     while (mountRef.current?.firstChild) {
       mountRef.current.removeChild(mountRef.current.firstChild)
     }
-  }
-
-  function randomPick(max: number): number {
-    return Math.floor(Math.random() * max)
   }
 
   function init(localState: State) {
@@ -131,8 +129,8 @@ const Home: NextPage = () => {
   }
 
   function loadModel(localState: State) {
-    const model = MODELS[modelId]
-    const motion = MOTIONS[motionId]
+    const model = MODELS[localState.modelId]
+    const motion = MOTIONS[localState.motionId]
     console.info('[model file]', model, '[motion file]', motion)
 
     Ammo().then(() => {
@@ -186,22 +184,22 @@ const Home: NextPage = () => {
 
   function changeModel() {
     setLoading(true)
-    setModelId((modelId + 1) % MODELS.length)
+    const nid = (state.modelId + 1) % MODELS.length
     if (state.currentModel) {
       state.helper.remove(state.currentModel)
       state.scene.remove(state.currentModel)
     }
-    loadModel({ ...state })
+    loadModel({ ...state, modelId: nid })
   }
 
   function changeMotion() {
     setLoading(true)
-    setMotionId((motionId + 1) % MOTIONS.length)
+    const nid = (state.motionId + 1) % MOTIONS.length
     if (state.currentModel) {
       state.helper.remove(state.currentModel)
       state.scene.remove(state.currentModel)
     }
-    loadModel({ ...state })
+    loadModel({ ...state, motionId: nid })
   }
 
   return (
@@ -237,7 +235,7 @@ const Home: NextPage = () => {
       >
         GitHub
       </a>
-      <div ref={mountRef} />
+      <div ref={mountRef} style={{ display: loading ? 'none' : 'block' }} />
     </>
   )
 }
