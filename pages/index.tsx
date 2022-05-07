@@ -59,6 +59,8 @@ const initialState = () => ({
   motionId: 0,
 })
 
+let rid: number
+
 const Home: NextPage = () => {
   const mountRef = useRef<HTMLDivElement>(null)
   const [loading, setLoading] = useState(false)
@@ -177,7 +179,7 @@ const Home: NextPage = () => {
       if (localState.camera) {
         localState.renderer?.render(localState.scene, localState.camera)
       }
-      requestAnimationFrame(t)
+      rid = requestAnimationFrame(t)
     }
     t()
   }
@@ -185,21 +187,23 @@ const Home: NextPage = () => {
   function changeModel() {
     setLoading(true)
     const nid = (state.modelId + 1) % MODELS.length
-    if (state.currentModel) {
-      state.helper.remove(state.currentModel)
-      state.scene.remove(state.currentModel)
-    }
+    resetAnimation()
     loadModel({ ...state, modelId: nid })
   }
 
   function changeMotion() {
     setLoading(true)
     const nid = (state.motionId + 1) % MOTIONS.length
+    resetAnimation()
+    loadModel({ ...state, motionId: nid })
+  }
+
+  function resetAnimation() {
     if (state.currentModel) {
       state.helper.remove(state.currentModel)
       state.scene.remove(state.currentModel)
     }
-    loadModel({ ...state, motionId: nid })
+    cancelAnimationFrame(rid)
   }
 
   return (
@@ -235,7 +239,7 @@ const Home: NextPage = () => {
       >
         GitHub
       </a>
-      <div ref={mountRef} style={{ display: loading ? 'none' : 'block' }} />
+      <div ref={mountRef} />
     </>
   )
 }
