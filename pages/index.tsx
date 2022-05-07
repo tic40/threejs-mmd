@@ -19,45 +19,13 @@ import { MMDLoader } from 'three/examples/jsm/loaders/MMDLoader'
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 import Ammo from 'ammojs-typed'
 import Meta from '../components/meta'
-
-const MODELS = [
-  {
-    path: './models/lat_miku/Lat式ミクVer2.31_White.pmd',
-    height: 1.58,
-    emissiveMag: 1.5,
-  },
-  {
-    path: './models/alicia/mmd/Alicia_solid.pmx',
-    height: 1.48,
-    emissiveMag: 0.1,
-  },
-]
-const MOTIONS = [
-  './models/alicia/mmd_motion/2分ループステップ1.vmd',
-  './models/alicia/mmd_motion/2分ループステップ10.vmd',
-  './models/alicia/mmd_motion/2分ループステップ17.vmd',
-  './models/alicia/mmd_motion/2分ループステップ19.vmd',
-  './models/alicia/mmd_motion/2分ループステップ20.vmd',
-  './models/alicia/mmd_motion/2分ループステップ22.vmd',
-  './models/alicia/mmd_motion/2分ループステップ23.vmd',
-  './models/alicia/mmd_motion/2分ループステップ28.vmd',
-  './models/alicia/mmd_motion/2分ループステップ29.vmd',
-  './models/alicia/mmd_motion/2分ループステップ31.vmd',
-  './models/alicia/mmd_motion/2分ループステップ36.vmd',
-  './models/alicia/mmd_motion/2分ループステップ37.vmd',
-  './models/alicia/mmd_motion/2分ループステップ7.vmd',
-  './models/alicia/mmd_motion/2分ループステップ8.vmd',
-  './motions/nekomimi_switch/nekomimi_lat.vmd',
-  './motions/schrodingeiger_no_koneko/Schrodingeiger_no_Koneko1.vmd',
-]
+import { MODELS, MOTIONS } from '../modules/mmd'
 
 const Home: NextPage = () => {
   const mountRef = useRef<HTMLDivElement>(null)
   const [loaded, setLoaded] = useState(false)
   const [modelId, setModelId] = useState(0)
-  const [motionId, setMotionId] = useState(
-    Math.floor(Math.random() * MOTIONS.length)
-  )
+  const [motionId, setMotionId] = useState(randomPick(MOTIONS.length))
 
   useEffect(() => {
     init()
@@ -69,11 +37,16 @@ const Home: NextPage = () => {
     }
   }
 
+  function randomPick(max: number): number {
+    return Math.floor(Math.random() * max)
+  }
+
   function init() {
     setLoaded(false)
     clear()
     const model = MODELS[modelId]
     const motion = MOTIONS[motionId]
+    console.info('[model file]', motion)
     console.info('[motion file]', motion)
 
     const w = window.innerWidth
@@ -122,7 +95,7 @@ const Home: NextPage = () => {
     Ammo().then(() => {
       loader.loadWithAnimation(
         model.path,
-        motion,
+        motion.path,
         ({ mesh, animation }) => {
           //mesh.receiveShadow = true
           mesh.castShadow = true
