@@ -47,19 +47,21 @@ const Home: NextPage = () => {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    setLoading(true)
-    const setup = async () => {
-      init()
-      await Ammo()
-      await loadModel()
-      await loadMotion()
-      animate()
-      setLoading(false)
-    }
     setup()
   }, [])
 
-  function clear() {
+  async function setup() {
+    setLoading(true)
+    clearCanvas()
+    prepareStage()
+    await Ammo()
+    await loadModel()
+    await loadMotion()
+    animate()
+    setLoading(false)
+  }
+
+  function clearCanvas() {
     while (mountRef.current?.firstChild) {
       mountRef.current.removeChild(mountRef.current.firstChild)
     }
@@ -80,8 +82,7 @@ const Home: NextPage = () => {
     return MOTIONS[currentMotionId]
   }
 
-  function init() {
-    clear()
+  function prepareStage() {
     w = window.innerWidth
     h = window.innerHeight
     modelCache = {}
@@ -136,7 +137,6 @@ const Home: NextPage = () => {
       loader.load(
         model.path,
         (mesh) => {
-          // mesh.receiveShadow = true
           mesh.castShadow = true
           const boundingBox = new Box3().setFromObject(mesh)
           mesh.scale.multiplyScalar(model.height / boundingBox.max.y)
@@ -146,7 +146,7 @@ const Home: NextPage = () => {
           modelCache[model.name] = mesh
           resolve()
         },
-        (xhr) => console.info((xhr.loaded / xhr.total) * 100 + '% loaded'),
+        (xhr) => console.info(`[model] ${(xhr.loaded / xhr.total) * 100}% loaded`),
         (e) => reject(e)
       )
     })
@@ -163,10 +163,15 @@ const Home: NextPage = () => {
         currentModel,
         (animation) => {
           if (helper.meshes.length) return resolve()
-          helper.add(currentModel, {
-            animation: animation as AnimationClip,
-            physics: true,
-          })
+          try {
+            helper.add(currentModel, {
+              animation: animation as AnimationClip,
+              physics: true,
+            })
+          } catch (e) {
+            console.error(e)
+            reject(e)
+          }
           scene.add(currentModel)
           controls.target.set(0, model.height / 2, 0)
           controls.object.position.set(
@@ -176,7 +181,7 @@ const Home: NextPage = () => {
           )
           resolve()
         },
-        (xhr) => console.info((xhr.loaded / xhr.total) * 100 + '% loaded'),
+        (xhr) => console.info(`[motion] ${(xhr.loaded / xhr.total) * 100}% loaded`),
         (e) => reject(e)
       )
     })
@@ -193,23 +198,27 @@ const Home: NextPage = () => {
   }
 
   async function changeModel() {
-    setLoading(true)
     currentModelId = (currentModelId + 1) % MODELS.length
     reset()
   }
 
   async function changeMotion() {
-    setLoading(true)
     currentMotionId = (currentMotionId + 1) % MOTIONS.length
     reset()
   }
 
   async function reset() {
+    setLoading(true)
     helper.remove(currentModel)
     scene.remove(currentModel)
     cancelAnimationFrame(rid)
-    await loadModel()
-    await loadMotion()
+    try {
+      await loadModel()
+      await loadMotion()
+    } catch (e) {
+      setup() // restart
+      return
+    }
     animate()
     setLoading(false)
   }
@@ -227,14 +236,14 @@ const Home: NextPage = () => {
       />
       <button
         onClick={changeModel}
-        className="absolute top-2 left-2 bg-transparent text-gray-700 py-1 px-1 border border-gray-500 rounded"
+        className="absolute top-2 left-2 bg-transparent hover:text-gray-500 text-gray-700 py-1 px-1 border rounded"
         disabled={loading}
       >
         Model &gt;&gt;
       </button>
       <button
         onClick={changeMotion}
-        className="absolute top-2 left-24 bg-transparent text-gray-700 py-1 px-1 border border-gray-500 rounded"
+        className="absolute top-2 left-24 bg-transparent hover:text-gray-500 text-gray-700 py-1 px-1 border rounded"
         disabled={loading}
       >
         Motion &gt;&gt;
