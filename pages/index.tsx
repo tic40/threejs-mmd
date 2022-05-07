@@ -2,6 +2,7 @@ import type { NextPage } from 'next'
 import { useEffect, useRef, useState } from 'react'
 import {
   AmbientLight,
+  AnimationClip,
   AxesHelper,
   Box3,
   Clock,
@@ -12,6 +13,7 @@ import {
   PlaneGeometry,
   Scene,
   ShadowMaterial,
+  SkinnedMesh,
   WebGLRenderer,
 } from 'three'
 import { MMDAnimationHelper } from 'three/examples/jsm/animation/MMDAnimationHelper'
@@ -21,14 +23,50 @@ import Ammo from 'ammojs-typed'
 import Meta from '../components/meta'
 import { MODELS, MOTIONS } from '../modules/mmd'
 
+interface State {
+  w: number
+  h: number
+  renderer: WebGLRenderer | null
+  scene: Scene
+  clock: Clock
+  helper: MMDAnimationHelper
+  loader: MMDLoader
+  camera: PerspectiveCamera | null
+  groundMesh: Mesh | null
+  directionalLight: DirectionalLight | null
+  controls: OrbitControls | null
+  currentModel: SkinnedMesh | null
+  currentMotion: AnimationClip | null
+}
+
+const initialState = () => ({
+  w: 0,
+  h: 0,
+  renderer: null,
+  scene: new Scene(),
+  clock: new Clock(),
+  helper: new MMDAnimationHelper(),
+  loader: new MMDLoader(),
+  camera: null,
+  groundMesh: null,
+  directionalLight: null,
+  controls: null,
+  currentModel: null,
+  currentMotion: null,
+})
+
 const Home: NextPage = () => {
   const mountRef = useRef<HTMLDivElement>(null)
-  const [loaded, setLoaded] = useState(false)
+  const [loading, setLoading] = useState(false)
   const [modelId, setModelId] = useState(0)
   const [motionId, setMotionId] = useState(randomPick(MOTIONS.length))
+  const [state, setState] = useState<State>(initialState())
 
   useEffect(() => {
-    init()
+    setLoading(true)
+    const localState = initialState()
+    init(localState)
+    loadModel(localState)
   }, [])
 
   function clear() {
@@ -41,68 +79,73 @@ const Home: NextPage = () => {
     return Math.floor(Math.random() * max)
   }
 
-  function init() {
-    setLoaded(false)
+  function init(localState: State) {
     clear()
-    const model = MODELS[modelId]
-    const motion = MOTIONS[motionId]
-    console.info('[model file]', motion)
-    console.info('[motion file]', motion)
 
-    const w = window.innerWidth
-    const h = window.innerHeight
-    const renderer = new WebGLRenderer()
-    const scene = new Scene()
-    const clock = new Clock()
-    const helper = new MMDAnimationHelper()
-    const loader = new MMDLoader()
+    localState.w = window.innerWidth
+    localState.h = window.innerHeight
 
-    renderer.setPixelRatio(window.devicePixelRatio)
-    renderer.setSize(w, h)
-    renderer.setClearColor(0xffffff, 1.0)
-    renderer.shadowMap.enabled = true
-    mountRef.current?.appendChild(renderer.domElement)
+    localState.renderer = new WebGLRenderer()
+    localState.renderer.setPixelRatio(window.devicePixelRatio)
+    localState.renderer.setSize(localState.w, localState.h)
+    localState.renderer.setClearColor(0xffffff, 1.0)
+    localState.renderer.shadowMap.enabled = true
+    mountRef.current?.appendChild(localState.renderer.domElement)
 
     // camera
-    const camera = new PerspectiveCamera(45, w / h, 0.1, 100)
+    localState.camera = new PerspectiveCamera(
+      45,
+      localState.w / localState.h,
+      0.1,
+      100
+    )
 
     // ambientLight
-    scene.add(new AmbientLight(0xffffff, 0.6))
+    localState.scene.add(new AmbientLight(0xffffff, 0.6))
 
     // directionalLight
-    const directionalLight = new DirectionalLight(0xffe2b9, 0.4)
-    directionalLight.position.set(2, 4, 2)
-    directionalLight.castShadow = true
-    scene.add(directionalLight)
+    localState.directionalLight = new DirectionalLight(0xffe2b9, 0.4)
+    localState.directionalLight.position.set(2, 4, 2)
+    localState.directionalLight.castShadow = true
+    localState.scene.add(localState.directionalLight)
 
     // ground
-    const groundMesh = new Mesh(
+    localState.groundMesh = new Mesh(
       new PlaneGeometry(10, 10, 1, 1),
       new ShadowMaterial({ opacity: 0.2 })
     )
-    groundMesh.rotation.x = -Math.PI / 2
-    groundMesh.receiveShadow = true
-    scene.add(groundMesh)
+    localState.groundMesh.rotation.x = -Math.PI / 2
+    localState.groundMesh.receiveShadow = true
+    localState.scene.add(localState.groundMesh)
 
     // grid
-    scene.add(new GridHelper(10, 20, 0x0000000, 0x999999))
-    scene.add(new AxesHelper(10))
+    localState.scene.add(new GridHelper(10, 20, 0x0000000, 0x999999))
+    localState.scene.add(new AxesHelper(10))
 
     // control
-    const controls = new OrbitControls(camera, renderer.domElement)
-    controls.enableDamping = true
+    localState.controls = new OrbitControls(
+      localState.camera,
+      localState.renderer.domElement
+    )
+    localState.controls.enableDamping = true
+  }
+
+  function loadModel(localState: State) {
+    const model = MODELS[modelId]
+    const motion = MOTIONS[motionId]
+    console.info('[model file]', model, '[motion file]', motion)
 
     Ammo().then(() => {
-      loader.loadWithAnimation(
+      localState.loader.loadWithAnimation(
         model.path,
         motion.path,
         ({ mesh, animation }) => {
-          //mesh.receiveShadow = true
+          // mesh.receiveShadow = true
           mesh.castShadow = true
           const boundingBox = new Box3().setFromObject(mesh)
           mesh.scale.multiplyScalar(model.height / boundingBox.max.y)
-          controls.target.set(0, model.height / 2, 0)
-          controls.object.position.set(
+          localState.controls?.target.set(0, model.height / 2, 0)
+          localState.controls?.object.position.set(
             0,
             model.height * 0.55,
             model.height * 1.9
@@ -113,27 +156,52 @@ const Home: NextPage = () => {
             )
           }
 
-          helper.add(mesh, { animation: animation, physics: true })
-          scene.add(mesh)
-          setTimeout(() => setLoaded(true), 500)
+          localState.helper.add(mesh, { animation: animation, physics: true })
+          localState.scene.add(mesh)
+          localState.currentModel = mesh
+          localState.currentMotion = animation
+          setTimeout(() => {
+            setState({ ...state, ...localState })
+            setLoading(false)
+            animate(localState)
+          }, 500)
         },
         (xhr) => console.info((xhr.loaded / xhr.total) * 100 + '% loaded'),
         (e) => console.error(e)
       )
-      const t = () => {
-        helper.update(clock.getDelta())
-        controls.update()
-        renderer.render(scene, camera)
-        requestAnimationFrame(t)
-      }
-      t()
     })
   }
 
+  function animate(localState: State) {
+    const t = () => {
+      localState.helper.update(localState.clock.getDelta())
+      localState.controls?.update()
+      if (localState.camera) {
+        localState.renderer?.render(localState.scene, localState.camera)
+      }
+      requestAnimationFrame(t)
+    }
+    t()
+  }
+
   function changeModel() {
-    setModelId(modelId ^ 1)
-    setMotionId(Math.floor(Math.random() * MOTIONS.length))
-    init()
+    setLoading(true)
+    setModelId((modelId + 1) % MODELS.length)
+    if (state.currentModel) {
+      state.helper.remove(state.currentModel)
+      state.scene.remove(state.currentModel)
+    }
+    loadModel({ ...state })
+  }
+
+  function changeMotion() {
+    setLoading(true)
+    setMotionId((motionId + 1) % MOTIONS.length)
+    if (state.currentModel) {
+      state.helper.remove(state.currentModel)
+      state.scene.remove(state.currentModel)
+    }
+    loadModel({ ...state })
   }
 
   return (
@@ -145,23 +213,31 @@ const Home: NextPage = () => {
       <div
         className="absolute top-1/2 left-1/2 animate-ping h-5 w-5 bg-gray-600 rounded-full"
         role="status"
-        style={{ display: loaded ? 'none' : 'block' }}
+        style={{ display: loading ? 'block' : 'none' }}
       />
       <button
         onClick={changeModel}
-        className="absolute top-2 left-2 bg-transparent text-blue-700 py-1 px-2 border border-blue-500 rounded"
+        className="absolute top-2 left-2 bg-transparent text-gray-700 py-1 px-1 border border-gray-500 rounded"
+        disabled={loading}
       >
-        Change
+        Model &gt;&gt;
+      </button>
+      <button
+        onClick={changeMotion}
+        className="absolute top-2 left-24 bg-transparent text-gray-700 py-1 px-1 border border-gray-500 rounded"
+        disabled={loading}
+      >
+        Motion &gt;&gt;
       </button>
       <a
-        className="absolute bottom-2 left-2 bg-transparent text-gray-700 py-1 px-1 border border-gray-500 rounded"
+        className="absolute bottom-2 left-2 bg-transparent text-gray-700 py-1 px-1 noborder rounded"
         href="https://github.com/tic40/threejs-mmd"
         target="_blank"
         rel="noreferrer"
       >
         GitHub
       </a>
-      <div ref={mountRef} style={{ display: loaded ? 'block' : 'none' }} />
+      <div ref={mountRef} />
     </>
   )
 }
