@@ -27,7 +27,7 @@ const MODELS = [
     emissiveMag: 1.5,
   },
   {
-    path: './models/Alicia/MMD/Alicia_solid.pmx',
+    path: './models/alicia/mmd/Alicia_solid.pmx',
     height: 1.48,
     emissiveMag: 0.1,
   },
