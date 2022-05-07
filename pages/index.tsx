@@ -8,6 +8,7 @@ import {
   Clock,
   DirectionalLight,
   GridHelper,
+  Material,
   Mesh,
   PerspectiveCamera,
   PlaneGeometry,
@@ -16,61 +17,46 @@ import {
   SkinnedMesh,
   WebGLRenderer,
 } from 'three'
-import { MMDAnimationHelper } from 'three/examples/jsm/animation/MMDAnimationHelper'
-import { MMDLoader } from 'three/examples/jsm/loaders/MMDLoader'
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
+import * as SkeletonUtils from 'three/examples/jsm/utils/SkeletonUtils.js'
 import Ammo from 'ammojs-typed'
 import Meta from '../components/meta'
+import { MMDAnimationHelper } from 'three/examples/jsm/animation/MMDAnimationHelper'
+import { MMDLoader } from 'three/examples/jsm/loaders/MMDLoader'
 import { MODELS, MOTIONS } from '../modules/mmd'
-
-interface State {
-  w: number
-  h: number
-  renderer: WebGLRenderer | null
-  scene: Scene
-  clock: Clock
-  helper: MMDAnimationHelper
-  loader: MMDLoader
-  camera: PerspectiveCamera | null
-  groundMesh: Mesh | null
-  directionalLight: DirectionalLight | null
-  controls: OrbitControls | null
-  currentModel: SkinnedMesh | null
-  currentMotion: AnimationClip | null
-  modelId: number
-  motionId: number
-}
-
-const initialState = () => ({
-  w: 0,
-  h: 0,
-  renderer: null,
-  scene: new Scene(),
-  clock: new Clock(),
-  helper: new MMDAnimationHelper(),
-  loader: new MMDLoader(),
-  camera: null,
-  groundMesh: null,
-  directionalLight: null,
-  controls: null,
-  currentModel: null,
-  currentMotion: null,
-  modelId: 0,
-  motionId: 0,
-})
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls'
 
 let rid: number
+let modelCache: { [x: string]: SkinnedMesh }
+let w: number
+let h: number
+let renderer: WebGLRenderer
+let scene: Scene
+let clock: Clock
+let helper: MMDAnimationHelper
+let loader: MMDLoader
+let camera: PerspectiveCamera
+let groundMesh: Mesh
+let directionalLight: DirectionalLight
+let controls: OrbitControls
+let currentModel: SkinnedMesh
+let currentModelId: number
+let currentMotionId: number
 
 const Home: NextPage = () => {
   const mountRef = useRef<HTMLDivElement>(null)
   const [loading, setLoading] = useState(false)
-  const [state, setState] = useState<State>(initialState())
 
   useEffect(() => {
     setLoading(true)
-    const localState = initialState()
-    init(localState)
-    loadModel(localState)
+    const setup = async () => {
+      init()
+      await Ammo()
+      await loadModel()
+      await loadMotion()
+      animate()
+      setLoading(false)
+    }
+    setup()
   }, [])
 
   function clear() {
@@ -79,131 +65,153 @@ const Home: NextPage = () => {
     }
   }
 
-  function init(localState: State) {
+  function getRandomInt(max: number) {
+    return Math.floor(Math.random() * max)
+  }
+
+  function cloneMesh(mesh: SkinnedMesh) {
+    return (SkeletonUtils as any).clone(mesh)
+  }
+
+  function getCurrentModelInfo() {
+    return MODELS[currentModelId]
+  }
+  function getCurrentMotionInfo() {
+    return MOTIONS[currentMotionId]
+  }
+
+  function init() {
     clear()
-
-    localState.w = window.innerWidth
-    localState.h = window.innerHeight
-
-    localState.renderer = new WebGLRenderer()
-    localState.renderer.setPixelRatio(window.devicePixelRatio)
-    localState.renderer.setSize(localState.w, localState.h)
-    localState.renderer.setClearColor(0xffffff, 1.0)
-    localState.renderer.shadowMap.enabled = true
-    mountRef.current?.appendChild(localState.renderer.domElement)
+    w = window.innerWidth
+    h = window.innerHeight
+    modelCache = {}
+    currentModelId = 0
+    currentMotionId = getRandomInt(MOTIONS.length)
+    scene = new Scene()
+    clock = new Clock()
+    helper = new MMDAnimationHelper()
+    loader = new MMDLoader()
+    renderer = new WebGLRenderer()
+    renderer.setPixelRatio(window.devicePixelRatio)
+    renderer.setSize(w, h)
+    renderer.setClearColor(0xffffff, 1.0)
+    renderer.shadowMap.enabled = true
+    mountRef.current?.appendChild(renderer.domElement)
 
     // camera
-    localState.camera = new PerspectiveCamera(
-      45,
-      localState.w / localState.h,
-      0.1,
-      100
-    )
+    camera = new PerspectiveCamera(45, w / h, 0.1, 100)
 
     // ambientLight
-    localState.scene.add(new AmbientLight(0xffffff, 0.6))
+    scene.add(new AmbientLight(0xffffff, 0.6))
 
     // directionalLight
-    localState.directionalLight = new DirectionalLight(0xffe2b9, 0.4)
-    localState.directionalLight.position.set(2, 4, 2)
-    localState.directionalLight.castShadow = true
-    localState.scene.add(localState.directionalLight)
+    directionalLight = new DirectionalLight(0xffe2b9, 0.4)
+    directionalLight.position.set(2, 4, 2)
+    directionalLight.castShadow = true
+    scene.add(directionalLight)
 
     // ground
-    localState.groundMesh = new Mesh(
+    groundMesh = new Mesh(
       new PlaneGeometry(10, 10, 1, 1),
       new ShadowMaterial({ opacity: 0.2 })
     )
-    localState.groundMesh.rotation.x = -Math.PI / 2
-    localState.groundMesh.receiveShadow = true
-    localState.scene.add(localState.groundMesh)
+    groundMesh.rotation.x = -Math.PI / 2
+    groundMesh.receiveShadow = true
+    scene.add(groundMesh)
 
     // grid
-    localState.scene.add(new GridHelper(10, 20, 0x0000000, 0x999999))
-    localState.scene.add(new AxesHelper(10))
+    scene.add(new GridHelper(10, 20, 0x0000000, 0x999999))
+    scene.add(new AxesHelper(10))
 
     // control
-    localState.controls = new OrbitControls(
-      localState.camera,
-      localState.renderer.domElement
-    )
-    localState.controls.enableDamping = true
+    controls = new OrbitControls(camera, renderer.domElement)
+    controls.enableDamping = true
   }
 
-  function loadModel(localState: State) {
-    const model = MODELS[localState.modelId]
-    const motion = MOTIONS[localState.motionId]
-    console.info('[model file]', model, '[motion file]', motion)
+  async function loadModel(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const model = MODELS[currentModelId]
+      if (modelCache[model.name]) return resolve()
 
-    Ammo().then(() => {
-      localState.loader.loadWithAnimation(
+      loader.load(
         model.path,
-        motion.path,
-        ({ mesh, animation }) => {
+        (mesh) => {
           // mesh.receiveShadow = true
           mesh.castShadow = true
           const boundingBox = new Box3().setFromObject(mesh)
           mesh.scale.multiplyScalar(model.height / boundingBox.max.y)
-          localState.controls?.target.set(0, model.height / 2, 0)
-          localState.controls?.object.position.set(
-            0,
-            model.height * 0.55,
-            model.height * 1.9
-          )
-          if (Array.isArray(mesh.material)) {
-            mesh.material.forEach((v) =>
-              (v as any).emissive.multiplyScalar(model.emissiveMag)
-            )
-          }
-
-          localState.helper.add(mesh, { animation: animation, physics: true })
-          localState.scene.add(mesh)
-          localState.currentModel = mesh
-          localState.currentMotion = animation
-          setTimeout(() => {
-            setState({ ...state, ...localState })
-            setLoading(false)
-            animate(localState)
-          }, 500)
+          ;(mesh.material as Material[]).forEach((v: any) => {
+            v.emissive.multiplyScalar(model.emissiveMag)
+          })
+          modelCache[model.name] = mesh
+          resolve()
         },
         (xhr) => console.info((xhr.loaded / xhr.total) * 100 + '% loaded'),
-        (e) => console.error(e)
+        (e) => reject(e)
       )
     })
   }
 
-  function animate(localState: State) {
+  async function loadMotion(): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const model = getCurrentModelInfo()
+      const motion = getCurrentMotionInfo()
+      currentModel = cloneMesh(modelCache[model.name])
+
+      loader.loadAnimation(
+        motion.path,
+        currentModel,
+        (animation) => {
+          if (helper.meshes.length) return resolve()
+          helper.add(currentModel, {
+            animation: animation as AnimationClip,
+            physics: true,
+          })
+          scene.add(currentModel)
+          controls.target.set(0, model.height / 2, 0)
+          controls.object.position.set(
+            0,
+            model.height * 0.55,
+            model.height * 1.9
+          )
+          resolve()
+        },
+        (xhr) => console.info((xhr.loaded / xhr.total) * 100 + '% loaded'),
+        (e) => reject(e)
+      )
+    })
+  }
+
+  function animate() {
     const t = () => {
-      localState.helper.update(localState.clock.getDelta())
-      localState.controls?.update()
-      if (localState.camera) {
-        localState.renderer?.render(localState.scene, localState.camera)
-      }
+      helper.update(clock.getDelta())
+      controls.update()
+      renderer.render(scene, camera)
       rid = requestAnimationFrame(t)
     }
     t()
   }
 
-  function changeModel() {
+  async function changeModel() {
     setLoading(true)
-    const nid = (state.modelId + 1) % MODELS.length
-    resetAnimation()
-    loadModel({ ...state, modelId: nid })
+    currentModelId = (currentModelId + 1) % MODELS.length
+    reset()
   }
 
-  function changeMotion() {
+  async function changeMotion() {
     setLoading(true)
-    const nid = (state.motionId + 1) % MOTIONS.length
-    resetAnimation()
-    loadModel({ ...state, motionId: nid })
+    currentMotionId = (currentMotionId + 1) % MOTIONS.length
+    reset()
   }
 
-  function resetAnimation() {
-    if (state.currentModel) {
-      state.helper.remove(state.currentModel)
-      state.scene.remove(state.currentModel)
-    }
+  async function reset() {
+    helper.remove(currentModel)
+    scene.remove(currentModel)
     cancelAnimationFrame(rid)
+    await loadModel()
+    await loadMotion()
+    animate()
+    setLoading(false)
   }
 
   return (
