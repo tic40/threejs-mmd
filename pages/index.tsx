@@ -47,18 +47,29 @@ const Home: NextPage = () => {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
+    w = window.innerWidth
+    h = window.innerHeight
+    if (!modelCache) modelCache = {}
+    if (!currentModelId) currentModelId = 0
+    if (!currentMotionId) currentMotionId = getRandomInt(MOTIONS.length)
     setup()
   }, [])
 
   async function setup() {
     setLoading(true)
     clearCanvas()
-    prepareStage()
-    await Ammo()
-    await loadModel()
-    await loadMotion()
+    try {
+      prepareStage()
+      await Ammo()
+      await loadModel()
+      await loadMotion()
+    } catch (e) {
+      alert('error occurred!')
+      return
+    } finally {
+      setLoading(false)
+    }
     animate()
-    setLoading(false)
   }
 
   function clearCanvas() {
@@ -72,22 +83,19 @@ const Home: NextPage = () => {
   }
 
   function cloneMesh(mesh: SkinnedMesh) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return (SkeletonUtils as any).clone(mesh)
   }
 
   function getCurrentModelInfo() {
     return MODELS[currentModelId]
   }
+
   function getCurrentMotionInfo() {
     return MOTIONS[currentMotionId]
   }
 
   function prepareStage() {
-    w = window.innerWidth
-    h = window.innerHeight
-    modelCache = {}
-    currentModelId = 0
-    currentMotionId = getRandomInt(MOTIONS.length)
     scene = new Scene()
     clock = new Clock()
     helper = new MMDAnimationHelper()
@@ -140,13 +148,15 @@ const Home: NextPage = () => {
           mesh.castShadow = true
           const boundingBox = new Box3().setFromObject(mesh)
           mesh.scale.multiplyScalar(model.height / boundingBox.max.y)
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           ;(mesh.material as Material[]).forEach((v: any) => {
             v.emissive.multiplyScalar(model.emissiveMag)
           })
           modelCache[model.name] = mesh
           resolve()
         },
-        (xhr) => console.info(`[model] ${(xhr.loaded / xhr.total) * 100}% loaded`),
+        (xhr) =>
+          console.info(`[model] ${(xhr.loaded / xhr.total) * 100}% loaded`),
         (e) => reject(e)
       )
     })
@@ -171,6 +181,7 @@ const Home: NextPage = () => {
           } catch (e) {
             console.error(e)
             reject(e)
+            return
           }
           scene.add(currentModel)
           controls.target.set(0, model.height / 2, 0)
@@ -181,7 +192,8 @@ const Home: NextPage = () => {
           )
           resolve()
         },
-        (xhr) => console.info(`[motion] ${(xhr.loaded / xhr.total) * 100}% loaded`),
+        (xhr) =>
+          console.info(`[motion] ${(xhr.loaded / xhr.total) * 100}% loaded`),
         (e) => reject(e)
       )
     })
@@ -216,11 +228,12 @@ const Home: NextPage = () => {
       await loadModel()
       await loadMotion()
     } catch (e) {
-      setup() // restart
+      setup()
       return
+    } finally {
+      setLoading(false)
     }
     animate()
-    setLoading(false)
   }
 
   return (
