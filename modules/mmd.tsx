@@ -3,13 +3,13 @@ export const MODELS = [
     name: 'lat_miku',
     path: './models/lat_miku/Lat式ミクVer2.31_White.pmd',
     height: 1.58,
-    emissiveMag: 1.5,
+    emissiveMag: 0,
   },
   {
     name: 'alicia',
     path: './models/alicia/Alicia_solid.pmx',
     height: 1.48,
-    emissiveMag: 0.1,
+    emissiveMag: -1,
   },
 ] as const
 

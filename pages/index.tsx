@@ -111,10 +111,10 @@ const Home: NextPage = () => {
     camera = new PerspectiveCamera(45, w / h, 0.1, 100)
 
     // ambientLight
-    scene.add(new AmbientLight(0xffffff, 0.6))
+    scene.add(new AmbientLight(0xffffff, 2.2))
 
     // directionalLight
-    directionalLight = new DirectionalLight(0xffe2b9, 0.4)
+    directionalLight = new DirectionalLight(0xffe2b9, 2)
     directionalLight.position.set(2, 4, 2)
     directionalLight.castShadow = true
     scene.add(directionalLight)
