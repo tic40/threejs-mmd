@@ -1,10 +1,8 @@
 # threejs-mmd
 
-- [WEB](https://tic40.github.io/threejs-mmd/)
+https://tic40.github.io/threejs-mmd/
 
 ## Getting Started
-
-First, run the development server:
 
 ```bash
 npm run dev
