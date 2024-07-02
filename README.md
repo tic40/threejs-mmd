@@ -1,13 +1,13 @@
 # threejs-mmd
 
-https://tic40.github.io/threejs-mmd/
+[https://tic40.github.io/threejs-mmd](https://tic40.github.io/threejs-mmd)
 
 ## Getting Started
 
+### Run
+
 ```bash
-npm run dev
-# or
-yarn dev
+pnpm dev
 ```
 
 ## Deploy

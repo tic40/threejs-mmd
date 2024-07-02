@@ -12,15 +12,18 @@ jobs:
       - name: Checkout 🛎️
         uses: actions/checkout@v2.3.1
       - name: Use Node.js 20.x
-        uses: actions/setup-node@v1
+        uses: actions/setup-node@v2
         with:
           node-version: "20.x"
 
+      - name: Install pnpm
+        run: npm install -g pnpm
+
       - name: Installing my packages
-        run: yarn install --frozen-lockfile
+        run: pnpm install
 
       - name: Build my App
-        run: npm run build && npm run export && touch ./out/.nojekyll
+        run: pnpm run build && touch ./out/.nojekyll
 
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@4.1.0
