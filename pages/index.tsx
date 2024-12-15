@@ -63,7 +63,7 @@ const Home: NextPage = () => {
       await Ammo()
       await loadModel()
       await loadMotion()
-    } catch (e) {
+    } catch {
       alert('error occurred!')
       return
     } finally {
@@ -227,7 +227,7 @@ const Home: NextPage = () => {
     try {
       await loadModel()
       await loadMotion()
-    } catch (e) {
+    } catch {
       setup()
       return
     } finally {
