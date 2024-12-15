@@ -8,12 +8,12 @@
     "start": "next start",
     "lint": "next lint",
     "format": "prettier --write --ignore-path .gitignore './**/*.{js,jsx,ts,tsx,json,css}'",
-    "export": "next build && next export"
+    "export": "next build"
   },
   "dependencies": {
     "@react-three/fiber": "^8.16.8",
     "ammojs-typed": "^1.0.6",
-    "next": "14.2.4",
+    "next": "15.1.0",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "three": "^0.166.0"
